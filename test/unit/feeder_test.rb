@@ -295,7 +295,103 @@ class FeederTest < Test::Unit::TestCase
     
   end
   
-  
+  def test_make_friendly_operation
+    
+    ## this is totally a heuristic, more than the rest (if that's possible)
+    
+    f = Feeder.new()
+    spec = f.create_spec("test.net")
+    
+    ## get the last word before a *
+    
+    text = spec.make_friendly_operation("GET", "/v1/api/word/*")
+    assert_equal "Get word by id", text
+
+    text = spec.make_friendly_operation("GET", "/v1/api/word/*.json")
+    assert_equal "Get word by id", text
+
+    text = spec.make_friendly_operation("POST", "/v1/api/word.xml")
+    assert_equal "Create word", text
+
+    text = spec.make_friendly_operation("PUT", "/v1/api/word/*")
+    assert_equal "Modify word by id", text
+
+    text = spec.make_friendly_operation("DELETE", "/v1/api/word/*")
+    assert_equal "Delete word by id", text
+    
+    text = spec.make_friendly_operation("DELETE", "/*.xml")
+    assert_equal "Delete by id", text
+
+    text = spec.make_friendly_operation("DELETE", "/")
+    assert_equal "Delete", text
+        
+    
+    ## if not one *, get the last word that is not format
+    
+    text = spec.make_friendly_operation("GET","/api/accounts.xml")
+    assert_equal "List accounts", text
+
+    text = spec.make_friendly_operation("GET","/api/accounts")
+    assert_equal "List accounts", text
+
+    text = spec.make_friendly_operation("POST","/api/accounts.xml")
+    assert_equal "Create accounts", text
+    
+    text = spec.make_friendly_operation("PUT","/api/accounts.xml")
+    assert_equal "Modify accounts", text
+
+    text = spec.make_friendly_operation("DELETE","/api/accounts.xml")
+    assert_equal "Delete accounts", text
+
+    ## if combination word/*/action, we assume action is the verb, only on PUT (modification)
+    
+    text = spec.make_friendly_operation("PUT", "/v1/api/word/*/suspend")
+    assert_equal "Suspend word by id", text
+
+    text = spec.make_friendly_operation("PUT", "/v1/api/word/*/suspend.xml")
+    assert_equal "Suspend word by id", text
+
+    text = spec.make_friendly_operation("POST", "/v1/api/word/*/activate.xml")
+    assert_equal "Create activate of word", text
+
+    ## if more than one *
+    
+    text = spec.make_friendly_operation("GET", "/v1/api/account/*/application/*.xml")
+    assert_equal "Get application of account", text
+
+    text = spec.make_friendly_operation("DELETE", "/v1/api/account/*/application/*.xml")
+    assert_equal "Delete application of account", text
+    
+    text = spec.make_friendly_operation("PUT", "/v1/api/account/*/application/*.xml")
+    assert_equal "Modify application of account", text
+
+    text = spec.make_friendly_operation("PUT", "/*/application/*.xml")
+    assert_equal "Modify application", text
+        
+    text = spec.make_friendly_operation("POST", "/v1/api/account/*/application.xml")
+    assert_equal "Create application of account", text
+
+    ## more cases
+    text = spec.make_friendly_operation("POST", "/v1")
+    assert_equal "Create v1", text
+
+    text = spec.make_friendly_operation("POST", "/")
+    assert_equal "Create", text
+    
+    text = spec.make_friendly_operation("GET", "/v1")
+    assert_equal "List v1", text
+
+    text = spec.make_friendly_operation("GET", "/")
+    assert_equal "List", text
+    
+    
+    
+    
+    
+    
+  end  
+    
+
   def test_log_file
         
     f = Feeder.new(:occurrences_threshold => 0.20, :skip_entries => 0)

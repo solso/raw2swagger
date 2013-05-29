@@ -46,7 +46,7 @@ module Raw2Swagger
           operation = (@swagger["apis"][spec_path]["operations"][swagger_method] = {})
           operation["httpMethod"] = swagger_method
           operation["deprecated"] = false
-          operation["summary"] = "placeholder for the method"
+          operation["summary"] = make_friendly_operation(swagger_method, spec_path)
           operation["parameters"] = {}
         else
           ## already exists
@@ -124,6 +124,64 @@ module Raw2Swagger
     
       def make_friendly_id(name)
          "#{name}_id"
+      end
+      
+      def make_friendly_operation(method, spec_path)
+        begin
+          method = method.downcase
+        
+          verbs = {"get" => "List", 
+            "post" => "Create", 
+            "put"=> "Modify", 
+            "delete" => "Delete", 
+            "head" => "Head", 
+            "patch" => "Patch"}
+        
+          v1 = derivator.vectorize(spec_path) || []
+        
+          ## remove EOL and formats
+          v1 = v1.delete_if {|x| x==Derivator::EOL || x[0]=="."}
+        
+          wildcards = []
+          v1.each_with_index do |lab, i|
+            wildcards << i if lab==Derivator::WILDCARD
+          end
+        
+          wildcards.reverse!
+        
+          str = ""
+          if wildcards.size()==0
+            str << verbs[method] << ' ' << (v1.last || "")
+          elsif wildcards.size()==1
+            verbs["get"] = "Get"
+            if (method!="put" && method!="post") || v1.last==Derivator::WILDCARD
+              str << verbs[method]
+              if (wildcards.first-1 >= 0)
+                str << ' ' << v1[wildcards.first-1] << ' by id' if (wildcards.first-1 >= 0)
+              else
+                str << ' by id'
+              end  
+            else
+              if method=="put"
+                str << v1[wildcards.first+1].capitalize << ' ' << v1[wildcards.first-1] << ' by id'
+              elsif method=="post"
+                str << verbs[method] << ' '<< v1[wildcards.first+1] 
+                str << ' of ' << v1[wildcards.first-1] if (wildcards.first-1 >= 0)
+              end  
+            end  
+          else
+            verbs["get"] = "Get"
+            str << verbs[method] << ' ' << v1[wildcards[0]-1] 
+            if (wildcards[1]-1 >= 0)
+              str << ' of ' << v1[wildcards[1]-1]
+            end            
+          end
+          
+          return str.strip
+        rescue Exception => e
+          raise e
+          return "Could not guess name"
+        end
       end
     
       protected 
