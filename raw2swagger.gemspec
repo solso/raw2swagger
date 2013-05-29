@@ -22,6 +22,7 @@ Gem::Specification.new do |gem|
   
   gem.add_dependency 'json'
   gem.add_dependency 'rake'
+  gem.add_dependency 'thin'
   gem.add_dependency 'rack',		'1.5.2'
   gem.add_dependency 'rack-test'
 end

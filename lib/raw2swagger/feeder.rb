@@ -278,7 +278,7 @@ module Raw2Swagger
         
       add_parameters(sp, spec_path, swagger_method, format, params)
     
-      ## other types are headers, form     
+      return spec_path     
     end
   
     def validate(obj)

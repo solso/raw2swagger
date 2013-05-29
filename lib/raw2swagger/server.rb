@@ -13,29 +13,30 @@ module Raw2Swagger
       clean_methods.map!(&:to_sym)
 
       args = req.params["args"]
+      clean_args = []
       
       if env["REQUEST_METHOD"]=="HEAD" || env["REQUEST_METHOD"]=="GET"
         args = req.params["args"]
-      else
-        args = req.body.read
-      end  
-      
-      clean_args = []
-      if !args.nil?
-        args = [args] if args.class!=Array
-          
-        args.each do |item|
-          begin
-            clean_args << JSON::parse(item)
-          rescue Exception => e
-            if item.to_i.to_s == item
-              clean_args << item.to_i
-            else
-              clean_args << item
-            end  
+        if !args.nil?
+        
+          args = [args] if args.class!=Array
+          args.each do |item|
+            begin
+              clean_args << JSON::parse(item)
+            rescue Exception => e
+              if item.to_i.to_s == item
+                clean_args << item.to_i
+              else
+                clean_args << item
+              end  
+            end
           end
-        end
-      end  
+        end  
+      else
+        body_str = req.body.read
+        clean_args = JSON::parse(body_str) unless body_str.nil? || body_str.empty?
+      end
+
       
       begin     
         o = @obj

@@ -325,7 +325,6 @@ class FeederTest < Test::Unit::TestCase
     assert_equal expected_paths.sort(), f.spec("raw2swagger.3scale.net").derivator.paths().sort()
     
     swg =  f.spec("raw2swagger.3scale.net").to_swagger()   
-    ## puts JSON.pretty_generate(swg)
     
     assert_equal expected_paths.size(), swg["apis"].size()
     
