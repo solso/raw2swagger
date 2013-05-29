@@ -26,7 +26,7 @@ class ServerTest < Test::Unit::TestCase
       "headers" => {}
     }
         
-    post '/process', valid_entry.to_json 
+    post '/process', [valid_entry].to_json 
     assert_equal 200, last_response.status
     
     get '/to_swagger', "args[]=#{valid_entry['host']}"
