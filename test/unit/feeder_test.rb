@@ -383,12 +383,6 @@ class FeederTest < Test::Unit::TestCase
 
     text = spec.make_friendly_operation("GET", "/")
     assert_equal "List", text
-    
-    
-    
-    
-    
-    
   end  
     
 
